@@ -1,0 +1,8 @@
+__pycache__
+.idea
+.vscode
+OptionalFile
+SupportFile
+venv
+.env
+file.py
