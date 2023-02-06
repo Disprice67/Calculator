@@ -347,7 +347,7 @@ def final_compilate(categorybook,
 
                 if keys in archivedick:
                     item.update(archivedick[keys])
-                    print(item)
+
                     if 'Category' not in item:
                         item.update(e.archivefinding(local_key=keys, 
                                                     archive_dict=archivedick, 
@@ -560,9 +560,6 @@ if __name__ == '__main__':
                     continue
 
                 for item in main_item:
-                    
-                    print(main_item, ' MAIN')
-                    print(item, 'YA ITEM')
 
                     #Main_func
                     result = final_compilate(

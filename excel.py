@@ -283,7 +283,6 @@ class Excel:
             service_comment = sheet.cell(row=rowas, column=14).value
             appoint = sheet.cell(row=rowas, column=15).value
             price_zip = sheet.cell(row=rowas, column=12).value
-            #category_name = sheet.cell(row=rowas, column=25).value
             num_order = sheet.cell(row=rowas, column=24).value
             qty = sheet.cell(row=rowas, column=5).value
 
@@ -439,16 +438,6 @@ class Excel:
 
         local_item = {}
 
-        #if local_key in archive_dict:
-
-            #print(local_key, archive_dict[local_key])
-            #search_cat_archive = self.categoryfinal(param=archive_dict[local_key], 
-            #                                        categoryybook=category_book
-            #                                        )
-
-            #local_item.update(search_cat_archive)
-
-        #else:
         try:
                 search_cat_arch = self.categoryfinal(param=self.categoryarch(key=local_key, 
                                                      categorybook=category_book), 
