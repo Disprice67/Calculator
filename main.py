@@ -1,77 +1,27 @@
 from lib_main import *
 
-def final_compilate(purchase_book, 
-                    archivebook,
-                    categorybook,
-                    orderbook,
-                    archmybook,
+def final_compilate(categorybook,
                     collisionbook,
                     e: excel.Excel, archdict: dict,
                     archivedick: dict,
                     purchase_one_dict: dict,
                     purchase_two_dict: dict,
-                    my_mail: mail.Attachmail):
+                    my_mail: mail.Attachmail,
+                    main_list: list, file):
 
     """MainInformation."""
 
     book_check = e.load_book(dir=config.BOOK_CHECK)
-    file = e.findexc(dir=config.ROOT_DIR)
-    print(file, 'YA FILE')
-    try:
-
-        mybook = op.load_workbook(filename=file)
-
-    except:
-
-        os.remove(file)
-        #body_messages = (f"""Письмо с темой: {my_mail.R_SUBJECT}. 
-#Не подходит для обработки, 
-#скорее всего в письме нет нужного формата файла!:(
-#""")
-
-        #my_mail.send_email(user=config.USERNAME_GMAIL,
-                             #pwd=config.PASSWORD_GMAIL,
-                             #recipient=f'{my_mail.R_EMAIL}',
-                             #subject=f'{my_mail.R_SUBJECT}',
-                             #body=body_messages,
-                             #file=None,
-                             #filename=None)
-
-        return False
-
-    mysheet = mybook.worksheets
     finaldict: dict = {}
     count: int = 0
-    list_item, sheet = e.isParametr(sheetname=mysheet)
 
-    if sheet is None:
-
-        if len(list_item) == 0:
-
-            body_messages = (f"""Письмо с темой: {my_mail.R_SUBJECT}.
-Файл {e.MAIN_FILENAME} не подходит для обработки. 
-Нет нужных столбцов!:(
-""")
-
-        os.remove(file)
-        my_mail.send_email(user=config.USERNAME_GMAIL,
-                             pwd=config.PASSWORD_GMAIL,
-                             recipient=f'{my_mail.R_EMAIL}',
-                             subject=f'{my_mail.R_SUBJECT}',
-                             body=body_messages,
-                             file=None,
-                             filename=None)
-
-        return False
-
-    main_list: list = []
+    list_item, e.MAX_COUNT, e.MAIN_SHEET = main_list[0], main_list[1], main_list[2]
 
     """StartMainDriver."""
     for keys_main in list_item:
 
         flag: bool = False
         count += 1
-        local_item: dict = {}
         item: dict = {}
         local_item_atr: dict = {}
         ws = (book_check['Расчет'], book_check['Для архива'])
@@ -93,7 +43,7 @@ def final_compilate(purchase_book,
                                    vendor=keys_main[3])
         
         for rowa in range(0, num):
-            if flag is True:
+            if flag:
                 break
 
             if len(listkey) > 1:
@@ -113,8 +63,6 @@ def final_compilate(purchase_book,
                                               key=keys_main[0]))
 
                 finaldict[keys_upper] = item
-                local_item[keys_upper] = item
-                main_list.append(local_item)
                 e.writing(item_dict=item, 
                          ws=ws, 
                          book='WriteZIP', 
@@ -127,10 +75,10 @@ def final_compilate(purchase_book,
 
                 flag = True
 
-        if flag is True:
+        if flag:
             continue
 
-        if flag is False:
+        if not flag:
             abstract_len_in = 0
             abstract_len_out = 0
             arch_key_in = 0
@@ -151,7 +99,7 @@ def final_compilate(purchase_book,
                         arch_key_out = key_arch
                         flag = True
 
-            if flag is True:
+            if flag:
                 if arch_key_in != 0:
                     item.update(archdict[arch_key_in])
                     if 'Category' not in item:
@@ -165,8 +113,6 @@ def final_compilate(purchase_book,
                                                   key=keys_main[0]))
 
                     finaldict[keys_upper] = item
-                    local_item[keys_upper] = item
-                    main_list.append(local_item)
                     e.writing(item_dict=item, 
                              ws=ws, 
                              book='WriteZIP', 
@@ -187,9 +133,7 @@ def final_compilate(purchase_book,
 
                     item.update(e.nowritercatebay(item=item, key=keys_main[0]))
 
-                    finaldict[keys_upper] = item
-                    local_item[keys_upper] = item
-                    main_list.append(local_item)                    
+                    finaldict[keys_upper] = item                   
                     e.writing(item_dict=item, 
                              ws=ws, 
                              book='WriteZIP', 
@@ -200,10 +144,10 @@ def final_compilate(purchase_book,
                              mainkey=keys_main,
                              list_item=list_item)
 
-        if flag is True:
+        if flag:
             continue
 
-        if flag is False:
+        if not flag:
             for rowa in range(0, num):
                 if flag is True:
                     break
@@ -225,8 +169,6 @@ def final_compilate(purchase_book,
                                                   key=keys_main[0]))
                     
                     finaldict[keys_upper] = item
-                    local_item[keys_upper] = item
-                    main_list.append(local_item)
                     e.writing(item_dict=item, 
                               ws=ws, 
                               appoint='48port', 
@@ -239,10 +181,10 @@ def final_compilate(purchase_book,
 
                     flag = True
 
-        if flag is True:
+        if flag:
             continue
         
-        if flag is False:
+        if not flag:
             for key_purchase_one in purchase_one_dict.keys():
                 if flag is True:
                     break
@@ -261,8 +203,6 @@ def final_compilate(purchase_book,
                                                   key=keys_main[0]))
                     
                     finaldict[keys_upper] = item
-                    local_item[keys_upper] = item
-                    main_list.append(local_item)
                     e.writing(item_dict=item, 
                               ws=ws, 
                               appoint='48port', 
@@ -288,8 +228,6 @@ def final_compilate(purchase_book,
                                                   key=keys_main[0]))
 
                     finaldict[keys_upper] = item
-                    local_item[keys_upper] = item
-                    main_list.append(local_item)
                     e.writing(item_dict=item, 
                               ws=ws, 
                               appoint='48port', 
@@ -302,10 +240,10 @@ def final_compilate(purchase_book,
 
                     flag = True
 
-        if flag is True:
+        if flag:
             continue
 
-        if flag is False:
+        if not flag:
             for rowa in range(0, num):
                 if flag is True:
                     break
@@ -326,8 +264,6 @@ def final_compilate(purchase_book,
                                                   key=keys_main[0]))
 
                     finaldict[keys_upper] = item
-                    local_item[keys_upper] = item
-                    main_list.append(local_item)
                     e.writing(item_dict=item, 
                               ws=ws, 
                               appoint='48port', 
@@ -340,10 +276,10 @@ def final_compilate(purchase_book,
 
                     flag = True
 
-        if flag is True:
+        if flag:
             continue
 
-        if flag is False:
+        if not flag:
             for key_purchase_two in purchase_two_dict.keys():
                 if flag is True:
                     break
@@ -361,8 +297,6 @@ def final_compilate(purchase_book,
                     item.update(e.nowritercatebay(item=item, key=keys_main[0]))
 
                     finaldict[keys_upper] = item
-                    local_item[keys_upper] = item
-                    main_list.append(local_item)
                     e.writing(item_dict=item, 
                               ws=ws, 
                               appoint='48port', 
@@ -386,8 +320,6 @@ def final_compilate(purchase_book,
                     item.update(e.nowritercatebay(item=item, key=keys_main[0]))
 
                     finaldict[keys_upper] = item
-                    local_item[keys_upper] = item
-                    main_list.append(local_item)
                     e.writing(item_dict=item, 
                               ws=ws, 
                               appoint='48port', 
@@ -400,10 +332,10 @@ def final_compilate(purchase_book,
 
                     flag = True
 
-        if flag is True:
+        if flag:
             continue
 
-        if flag is False:
+        if not flag:
             for rowa in range(0, num):
                 if flag is True:
                     break
@@ -415,10 +347,12 @@ def final_compilate(purchase_book,
 
                 if keys in archivedick:
                     item.update(archivedick[keys])
-                    final_category = e.categoryfinal(param=item, 
-                                                     categoryybook=categorybook)
-
-                    item.update(final_category)
+                    print(item)
+                    if 'Category' not in item:
+                        item.update(e.archivefinding(local_key=keys, 
+                                                    archive_dict=archivedick, 
+                                                    category_book=categorybook, 
+                                                    main_key=keys_main))
                     if 'Category' in local_item_atr:
                         item.update(local_item_atr)
 
@@ -426,8 +360,6 @@ def final_compilate(purchase_book,
                                                   key=keys_main[0]))
 
                     finaldict[keys_upper] = item
-                    local_item[keys_upper] = item
-                    main_list.append(local_item)
                     e.writing(item_dict=item, 
                               ws=ws, 
                               appoint='Archive', 
@@ -440,10 +372,10 @@ def final_compilate(purchase_book,
 
                     flag = True
 
-        if flag is True:
+        if flag:
             continue
 
-        if flag is False:
+        if not flag:
             for key_archive in archivedick.keys():
                 if flag is True:
                     break
@@ -451,9 +383,12 @@ def final_compilate(purchase_book,
                     continue
                 if keys_upper in str(key_archive):
                     item.update(archivedick[key_archive])
-
-                    item.update(e.categoryfinal(param=item, 
-                                categoryybook=categorybook))
+                    
+                    if 'Category' not in item:
+                        item.update(e.archivefinding(local_key=keys_upper, 
+                                                    archive_dict=archivedick, 
+                                                    category_book=categorybook, 
+                                                    main_key=keys_main))
 
                     if 'Category' in local_item_atr:
                         item.update(local_item_atr)
@@ -462,8 +397,6 @@ def final_compilate(purchase_book,
                                                   key=keys_main[0]))
 
                     finaldict[keys_upper] = item
-                    local_item[keys_upper] = item
-                    main_list.append(local_item)
                     e.writing(item_dict=item, 
                               ws=ws, 
                               appoint='Archive', 
@@ -479,8 +412,13 @@ def final_compilate(purchase_book,
                 elif str(key_archive) in keys_upper:
 
                     item.update(archivedick[key_archive])
-                    item.update(e.categoryfinal(param=item, 
-                                                categoryybook=categorybook))
+
+                    if 'Category' not in item:
+                        item.update(e.archivefinding(local_key=key_archive, 
+                                                    archive_dict=archivedick, 
+                                                    category_book=categorybook, 
+                                                    main_key=keys_main))
+
                     if 'Category' in local_item_atr:
                         item.update(local_item_atr)
 
@@ -488,8 +426,6 @@ def final_compilate(purchase_book,
                                                   key=keys_main[0]))
 
                     finaldict[keys_upper] = item
-                    local_item[keys_upper] = item
-                    main_list.append(local_item)
                     e.writing(item_dict=item, 
                               ws=ws, 
                               appoint='Archive', 
@@ -502,10 +438,10 @@ def final_compilate(purchase_book,
 
                     flag = True
 
-        if flag is True:
+        if flag:
             continue
 
-        if flag is False:
+        if not flag:
             try:
                 if 'Category' not in item:
                     item.update(e.categoryfinal(param=e.categoryarch(key=keys_upper, 
@@ -518,9 +454,8 @@ def final_compilate(purchase_book,
                 item.update(e.nowritercatebay(item=item, 
                                               key=keys_main[0]))
 
+            
             finaldict[keys_upper] = item
-            local_item[keys_upper] = item
-            main_list.append(local_item)
             e.writing(item_dict=item, 
                       ws=ws, 
                       appoint='Other', 
@@ -532,9 +467,8 @@ def final_compilate(purchase_book,
                       list_item=list_item)
 
     e.MAIN_FILE_OUT = config.OUT_DIR + '/final.xlsx'
-    
+
     book_check.save(e.MAIN_FILE_OUT)
-    os.remove(e.MAIN_FILE_IN)
 
     json_object_archive = json.dumps(finaldict,
                                      indent=4,
@@ -573,6 +507,7 @@ if __name__ == '__main__':
     purchase_one_dict = e.purchasesearch_one(purchasebook=purchase_book)
     purchase_two_dict = e.purchasesearch_two(purchasebook=purchase_book)
 
+    flag: bool = False
 
     #Start_check_mail
     while (True):
@@ -591,79 +526,127 @@ if __name__ == '__main__':
         if process_mail is True:
 
             while (e.findexc(dir=config.ROOT_DIR) != ''):
-                
-                #Main_func
-                result = final_compilate(
-                                 purchase_book=purchase_book,
-                                 archivebook=archivebook,
+
+                file = e.findexc(dir=config.ROOT_DIR)
+                name = e.MAIN_FILENAME
+
+                try:
+
+                    e.MYBOOK = op.load_workbook(filename=file)
+
+                except:
+
+                    os.remove(file)
+                    continue
+
+                main_item = e.isParametr(book=e.MYBOOK)
+
+                if len(main_item) == 0:
+
+                    body_messages = (f"""Письмо с темой: {my_mail.R_SUBJECT}.
+Файл {name} не подходит для обработки. 
+Нет нужных столбцов!:(
+""")
+
+                    os.remove(file)
+                    my_mail.send_email(user=config.USERNAME_GMAIL,
+                             pwd=config.PASSWORD_GMAIL,
+                             recipient=f'{my_mail.R_EMAIL}',
+                             subject=f'{my_mail.R_SUBJECT}',
+                             body=body_messages,
+                             file=None,
+                             filename=None)
+
+                    continue
+
+                for item in main_item:
+                    
+                    print(main_item, ' MAIN')
+                    print(item, 'YA ITEM')
+
+                    #Main_func
+                    result = final_compilate(
                                  categorybook=categorybook,
-                                 orderbook=orderbook,
-                                 archmybook=archmybook,
                                  collisionbook=collisionbook,
                                  e=e, archdict=archdict,
                                  archivedick=archivedick,
                                  purchase_one_dict=purchase_one_dict,
                                  purchase_two_dict=purchase_two_dict,
-                                 my_mail=my_mail)
+                                 my_mail=my_mail, main_list=item,
+                                 file=file)
 
-                if result is False:
-                    continue
+                    if result is False:
+                        continue
 
-                file_out = e.MAIN_FILE_OUT
-                filename = e.MAIN_FILENAME
-                max_count = e.MAX_COUNT
+                    file_out = e.MAIN_FILE_OUT
+                    filename = name
+                    max_count = e.MAX_COUNT
+                    sheetname = e.MAIN_SHEET
 
-                wbxl = xw.Book(e.MAIN_FILE_OUT)
+                    STATIC_COUNT = 20
+                    STATIC_MULTIPLYING = 1.2
 
-                multiplying = wbxl.sheets['Оценка рыночной стоимости'].range('B2').value
-                lower_bound = wbxl.sheets['Оценка рыночной стоимости'].range('B3').value
-                upper_bound = wbxl.sheets['Оценка рыночной стоимости'].range('B4').value
-                wbxl.close()
+                    wbxl = xw.Book(e.MAIN_FILE_OUT)
 
-                try:
-                    f_lower_bound = '{:,}'.format(math.ceil(lower_bound)).replace(',', ' ')
-                    f_upper_bound = '{:,}'.format(math.ceil(upper_bound)).replace(',', ' ')
-                except:
-                    f_lower_bound = 0
-                    f_upper_bound = 0 
+                    multiplying = wbxl.sheets['Оценка рыночной стоимости'].range('B2').value
+                    lower_bound = wbxl.sheets['Оценка рыночной стоимости'].range('B3').value
+                    upper_bound = wbxl.sheets['Оценка рыночной стоимости'].range('B4').value
+                    wbxl.close()
+
+                    if multiplying is None:
+                        multiplying = 0
+                    
+                    if lower_bound is None:
+                        flag = True
+                        lower_bound = 0
+
+                    if upper_bound is None:
+                        flag = True
+                        upper_bound = 0
+
+                    if not flag:
+
+                        f_lower_bound = '{:,}'.format(math.ceil(lower_bound)).replace(',', ' ')
+                        f_upper_bound = '{:,}'.format(math.ceil(upper_bound)).replace(',', ' ')
 
   
-                table_text = ''
-                body_messages = (f"""Обработанный файл во вложении!:)\n""")
+                    table_text = ''
+                    body_messages = (f"""Обработанный файл во вложении!:)\n
+Название файла: {filename}. Название обработанной страницы в исходном файле: {sheetname}.\n""")
 
-                if max_count < 20:
+                    if max_count < STATIC_COUNT:
 
-                    disclaimer = ("""\nПозиций очень мало, поэтому повышающему 
+                        disclaimer = ("""\nПозиций очень мало, поэтому повышающему 
 коэффициенту верить не рекомендуется. 
 Требуется перепроверка доли ненайденных позиций вручную.\n""")
 
-                    body_messages += disclaimer 
+                        body_messages += disclaimer 
 
-                if multiplying > 1.2:
+                    if multiplying > STATIC_MULTIPLYING:
  
-                    disclaimer = ("""\nБольшой повышающий коэффициент. 
+                        disclaimer = ("""\nБольшой повышающий коэффициент. 
 Требуется перепроверка доли ненайденных позиций вручную.\n""")
 
-                    body_messages += disclaimer
+                        body_messages += disclaimer
 
-                if lower_bound < upper_bound:
+                    if lower_bound < upper_bound:
 
-                    table_text = (f"""\n«Мы должны вписываться в диапазон 
+                        table_text = (f"""\n«Мы должны вписываться в диапазон 
 от {str(f_lower_bound) + 'р.'}  и до {str(f_upper_bound) + 'р.'} с учетом того, 
 что {math.ceil((multiplying - 1) * 100)}% единиц оборудования система не нашла в продаже на рынке.\n
 Расчет выполнен по курсу 70р/$»\n""")
 
-                if lower_bound > upper_bound:
+                    if lower_bound > upper_bound:
 
-                    table_text = (f"""\n«Мы должны вписываться в диапазон 
+                        table_text = (f"""\n«Мы должны вписываться в диапазон 
 от {str(f_upper_bound) + 'р.'} и до {str(f_lower_bound) + 'р.'} с учетом того, 
 что {math.ceil((multiplying - 1) * 100)}% единиц оборудования система не нашла в продаже на рынке.\n
 Расчет выполнен по курсу 70р/$»\n""")
 
-                body_messages += table_text
+                    body_messages += table_text
 
-                #for mail in 
-                my_mail.send_email(user=config.USERNAME_GMAIL,
+                    #for mail in 
+                    my_mail.send_email(user=config.USERNAME_GMAIL,
                                pwd=config.PASSWORD_GMAIL,
                                recipient= my_mail.R_EMAIL,
                                subject= my_mail.R_SUBJECT,
@@ -671,7 +654,7 @@ if __name__ == '__main__':
                                file=file_out,
                                filename=filename)
 
-                os.remove(file_out)
+                    os.remove(file_out)
 
-            my_mail.close_connection()
+                os.remove(file)
 

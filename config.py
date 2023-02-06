@@ -54,10 +54,4 @@ REPAIRCHECK = os.getenv('REPAIRCHECK')
 TZ = os.getenv('TZ')
 FINALPRICE = os.getenv('FINALPRICE')
 COUNTCHECK = os.getenv('COUNTCHECK')
-USD = os.getenv('USD')
-QTY = os.getenv('QTY')
-NUMBERSTR = os.getenv('NUMBERSTR')
-LASTNUMORDER = os.getenv('LASTNUMORDER')
-
-
 

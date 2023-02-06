@@ -4,8 +4,9 @@ from lib_excel import *
 class Excel:
 
     MAIN_FILE_OUT: str = None
-    MAIN_FILE_IN: str = None
     MAIN_FILENAME: str = None
+    MAIN_SHEET = None
+    MYBOOK = None
 
     MAX_COUNT: int = 0
 
@@ -23,16 +24,15 @@ class Excel:
                 break
 
             for fname in fileList:
-                print(fname)
+
                 if '.xlsx' in fname or '.xlsm' in fname:
 
                     file_dir: str = dir + f'/{str(fname)}'
-                    self.MAIN_FILE_IN = file_dir
                     self.MAIN_FILENAME = str(fname)
                     flag = False
                     break
 
-            return file_dir
+        return file_dir
 
     def load_book(self, dir):
 
@@ -40,12 +40,13 @@ class Excel:
         book = op.load_workbook(filename=file)
         return book
 
-    def isParametr(self, sheetname):
+    def isParametr(self, book):
         """search for the desired column."""
 
-        list_item: list = []
-        count: int = 0
-        number_true: int = 0
+        sheetname = book.worksheets
+        final_list: list = []
+        column_list: list = []
+        flag: bool = False
 
         #param_point
         name_c: int = 0
@@ -53,17 +54,23 @@ class Excel:
         amount_c: int = 0
         description_c: int = 0
         vendor_c: int = 0
-        m_sheet = None
 
         #collision
         col = ('NONE', 'None', '-', '')
 
         for sheet in sheetname:
 
-            for COL in sheet.iter_cols(1, sheet.max_column):
+            count: int = 0
+            number_true: int = 0
+
+            for COL in sheet.iter_cols(1, sheet.max_column + 1):
                 count += 1
 
                 if number_true == 5:
+
+                    flag = True
+                    it_tuple: tuple = (sheet, (name_c, vendor_c, pn_c, description_c, amount_c))
+                    column_list.append(it_tuple)
                     break
 
                 if type(COL[0].value) is not str:
@@ -72,69 +79,75 @@ class Excel:
                 column_value = COL[0].value.upper()
 
                 if 'P/N' in column_value or 'ПАРТ-НОМЕР' in column_value:
+
                     pn_c = count
                     number_true += 1
 
                 elif 'КОЛ-ВО' in column_value or 'КОЛИЧЕСТВО' in column_value:
+
                     amount_c = count
                     number_true += 1
 
                 elif 'ОПИСАНИЕ' in column_value:
+
                     description_c = count
                     number_true += 1
 
                 elif 'ВЕНДОР' in column_value:
+
                     vendor_c = count
                     number_true += 1
 
                 elif 'ЗАКАЗЧИК' in column_value:
+
                     name_c = count
                     number_true += 1
-
-            if number_true > 4:
-
-                m_sheet = sheet.title
-                break
             
-            if number_true < 5:
-                return list_item, m_sheet
+        if flag is False:
+            return final_list
 
-        for rowa in range(2, sheet.max_row + 1):
+        for item in column_list:
 
-            description = str(sheet.cell(row=rowa,
-                                        column=description_c).value).upper()
+            list_item: list = []
+            sheet_name = item[0]
+            column_number = item[1]
 
-            part_number = str(sheet.cell(row=rowa,
-                                        column=pn_c).value).upper()
-
-            amount = sheet.cell(row=rowa,
-                                    column=amount_c).value
-
-            vendor = str(sheet.cell(row=rowa,
-                                    column=vendor_c).value).upper()
-
-            name = str(sheet.cell(row=rowa,
-                                    column=name_c).value).upper()
-
-            if part_number is None or part_number in col:
-                continue
+            for rowa in range(2, sheet_name.max_row + 1):
                 
-            print(part_number)
 
-            self.MAX_COUNT += 1
+                description = str(sheet_name.cell(row=rowa,
+                                        column=column_number[3]).value).upper()
 
-            if amount is None or amount in col:
-                amount = 0
+                part_number = str(sheet_name.cell(row=rowa,
+                                        column=column_number[2]).value).upper()
 
-            if description is None or description in col:
-                description = ''
+                amount = sheet_name.cell(row=rowa,
+                                    column=column_number[4]).value
+
+                vendor = str(sheet_name.cell(row=rowa,
+                                    column=column_number[1]).value).upper()
+
+                name = str(sheet_name.cell(row=rowa,
+                                    column=column_number[0]).value).upper()
                 
-            item_tuple = (part_number,
+                if part_number is None or part_number in col:
+                    continue
+
+
+                if amount is None or amount in col:
+                    amount = 0
+
+                if description is None or description in col:
+                    description = ''
+                
+                item_tuple = (part_number,
                             amount, description, vendor, name)
 
-            list_item.append(item_tuple)
+                list_item.append(item_tuple)
 
-        return list_item, m_sheet
+            final_list.append((list_item, sheet_name.max_row, sheet_name))
+
+        return final_list
 
     def purchasesearch_one(self, purchasebook):
         """purchase creation."""
@@ -242,6 +255,10 @@ class Excel:
     def categoryarch(self, key, categorybook):
         """search by first letters in categories."""
 
+        noneresult = {'Category': 'None',
+                      'ServicePrice': 6001,
+                      'Hours': 4}
+
         sheet = categorybook['Ценник']
         for rowa in range(3, sheet.max_row):
             category_text = str(sheet.cell(row=rowa, column=1).value)
@@ -251,7 +268,8 @@ class Excel:
             if f_text in key:
                 return {'Category': category}
 
-        return None
+
+        return noneresult
 
     def archivecreation(self, archivebook, orderbook, category):
         """archive creation."""
@@ -265,7 +283,7 @@ class Excel:
             service_comment = sheet.cell(row=rowas, column=14).value
             appoint = sheet.cell(row=rowas, column=15).value
             price_zip = sheet.cell(row=rowas, column=12).value
-            category_name = sheet.cell(row=rowas, column=25).value
+            #category_name = sheet.cell(row=rowas, column=25).value
             num_order = sheet.cell(row=rowas, column=24).value
             qty = sheet.cell(row=rowas, column=5).value
 
@@ -273,7 +291,6 @@ class Excel:
                         'ServiceComment': f'{service_comment}',
                         'Appoint': f'{appoint}',
                         'PriceCostZIP': price_zip,
-                        'Category': f'{category_name}',
                         'NumOrder': f'{num_order}',
                         'MainKey': f'{main_pn}',
                         'QTY': qty,
@@ -361,14 +378,15 @@ class Excel:
 
                 if key in title:
                     price_item = float(item.sellingStatus.currentPrice.value)
-                    if price_item < min_price:
 
-                        min_price = price_item
-                        delivery_price = price_item / 2
-                        dict_ebay = {'URL': item.viewItemURL,
-                                     'PriceEbay': price_item,
-                                     'ShippingCost': delivery_price,
-                                     'Shipping': '1/2PriceItem'}
+                    min_price = price_item
+                    delivery_price = price_item / 2
+                    dict_ebay = {'URL': item.viewItemURL,
+                                 'PriceEbay': price_item,
+                                 'ShippingCost': delivery_price,
+                                 'Shipping': '1/2PriceItem'}
+                    break
+
             if dict_ebay == {}:
                 return result_none
 
@@ -405,17 +423,15 @@ class Excel:
             category = sheet.cell(row=rowa, column=1).value.upper()
             hours = sheet.cell(row=rowa, column=4).value
             service_price = sheet.cell(row=rowa, column=5).value
+            
+            
+            if param['Category'] == category:
 
-            try:
-                if param['Category'] == category:
+                return {'ServicePrice': service_price,
+                        'Hours': hours,
+                        'Category': category}
 
-                    return {'ServicePrice': service_price,
-                            'Hours': hours,
-                            'Category': category}
-            except:
-                return noneresult
-
-        return False
+        return noneresult
 
     def archivefinding(self, local_key, 
                        archive_dict, category_book, main_key):
@@ -423,22 +439,23 @@ class Excel:
 
         local_item = {}
 
-        if local_key in archive_dict:
+        #if local_key in archive_dict:
 
-            search_cat_archive = self.categoryfinal(param=archive_dict[local_key], 
-                                                    categoryybook=category_book
-                                                    )
+            #print(local_key, archive_dict[local_key])
+            #search_cat_archive = self.categoryfinal(param=archive_dict[local_key], 
+            #                                        categoryybook=category_book
+            #                                        )
 
-            local_item.update(search_cat_archive)
+            #local_item.update(search_cat_archive)
 
-        else:
-            try:
+        #else:
+        try:
                 search_cat_arch = self.categoryfinal(param=self.categoryarch(key=local_key, 
                                                      categorybook=category_book), 
                                                      categoryybook=category_book
                                                      )
                 local_item.update(search_cat_arch)
-            except:
+        except:
                 pass
 
         return local_item
@@ -681,31 +698,31 @@ class Excel:
                 if my_item != "None" and my_item != "-":
                     if appoint == 'Archive':
                         if event == 'Collision':
-                            h.value = str(localKey) + ': ' + stroka + f'{my_item}'
+                            h.value = str(localKey) + ': ' + f'{my_item}'
                         else:
-                            h.value = stroka + f'{my_item}'
+                            h.value = f'{my_item}'
                     elif event == 'Collision':
                         h.value = str(localKey) + ': ' + f'{my_item}'
                     else:
-                        h.value = my_item
+                        h.value = f'{my_item}'
 
         if 'ServiceComment' in item_dict:
             my_item = item_dict['ServiceComment']
             if my_item != "None":
                 if appoint == 'Archive':
                     if event == 'Collision':
-                        i.value = stroka_pn + stroka + f'{my_item}'
+                        i.value = stroka_pn + f': {localKey} :' + f'{my_item}'
                     else:
-                        i.value = stroka + f'{my_item}'
+                        i.value = f'{my_item}'
 
                 elif event == 'Collision':
-                    i.value = stroka_pn + f'{my_item}'
+                    i.value = stroka_pn + f': {localKey} :' + f'{my_item}'
                 else:
-                    i.value = my_item
+                    i.value = f'{my_item}'
 
         if 'ServiceComment' not in item_dict.keys():
             if event == 'Collision':
-                i.value = stroka_pn
+                i.value = f'{stroka_pn}' + f': {localKey} :'
 
         if 'Appoint' in item_dict:
             my_item = item_dict['Appoint']
@@ -713,9 +730,9 @@ class Excel:
             if type_me is str:
                 if my_item != "None" and my_item != "-":
                     if appoint == 'Archive':
-                        j.value = stroka + f'{my_item}'
+                        j.value = f'{my_item}'
                     else:
-                        j.value = my_item
+                        j.value = f'{my_item}'
 
         if 'NumOrder' in item_dict.keys():
             m.value = item_dict['NumOrder']
@@ -765,8 +782,7 @@ class Excel:
         l.number_format = '0'
         s.number_format = '0'
         t.number_format = '0'
- 
-        return True
+
 
     def collision(self, key, vendor):
         """Collision."""
